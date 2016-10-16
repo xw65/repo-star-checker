@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html ng-app="myApp">
-
+<html>
 <head>
   <meta charset="utf-8" />
   <title>GitHub Stargazer</title>
@@ -11,79 +10,13 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
           integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
           crossorigin="anonymous"></script>
-  <script src="https://code.angularjs.org/1.4.12/angular.js" data-semver="1.4.9"
-          data-require="angular.js@1.4.x"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.3.2/react.min.js"></script>
+  <script src="https://unpkg.com/react-dom@15.3.2/dist/react-dom.js"></script>
+  <script src="https://unpkg.com/babel-core@5.8.38/browser.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/3.5.0/firebase.js"></script>
-  <script src="./app.js"></script>
+  <script type="text/babel" src="app.js"></script>
 </head>
-
-<body ng-controller="MainCtrl">
-<div class="container">
-
-  <br>
-
-  <div class="jumbotron">
-    <h2>
-      <a href="https://github.com/gjk0090/repo-star-checker"><span class="glyphicon glyphicon-star"
-                                                                   aria-hidden="true"></span></a>
-      GitHub Stargazer
-    </h2>
-    <p>Have you starred these repos?</p>
-    <!-- <p><a class="btn btn-primary btn-lg" href="#" role="button">Star all!</a></p> -->
-  </div>
-
-  <div class="row">
-    <div class="col-lg-12">
-      <div class="input-group">
-        <input type="text" class="form-control" ng-model="username"
-               placeholder="Enter your GitHub username to check if you have starred these repos"
-               ng-keypress="go($event);" />
-        <span class="input-group-btn">
-            <button class="btn btn-default" type="button" ng-click="go();">Go!</button>
-          </span>
-      </div>
-    </div>
-  </div>
-
-  <br>
-
-  <div id="progress-bar">
-    <br>
-    <br>
-    <div class="progress progress-striped active">
-      <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"
-           style="width: 100%">
-      </div>
-    </div>
-  </div>
-
-  <ul id="repo-list" class="list-group" hidden>
-    <li ng-repeat="repo in repos" class="list-group-item">
-      <div class="row">
-        <div class="col-md-1 col-sm-2 col-xs-4">
-          <a class="thumbnail" style="margin-bottom:0px;">
-            <img src="{{imageMap[repo]}}">
-          </a>
-        </div>
-
-        <div class="col-md-11 col-sm-10 col-xs-12">
-          <h4>
-            {{repo}}
-            <span class="pull-right">
-                <a><span class="glyphicon"
-                         ng-class="starredMap[repo] ? 'glyphicon-star' : 'glyphicon-star-empty'"></span></a>
-                <a href="{{urlPrefix+repo}}"><span class="glyphicon glyphicon-share" aria-hidden="true"></span></a>
-              </span>
-          </h4>
-          <span>{{urlPrefix+repo}}</span>
-        </div>
-      </div>
-    </li>
-  </ul>
-
-</div>
-
+<body>
+<div id="container"></div>
 </body>
-
 </html>
-
