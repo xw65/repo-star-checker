@@ -23,6 +23,9 @@ const titleStyle = {
 const titleStarStyle = {
   marginRight: 10
 };
+const titleButtonStyle = {
+  float: 'right'
+};
 const listStarStyle = {
   marginRight: 4
 };
@@ -39,6 +42,7 @@ const textStyle = {
 class TitleBoxComponent extends React.Component {
   constructor(props) {
     super(props);
+    this._buttonAction = this._buttonAction.bind(this);
   }
 
   render() {
@@ -53,11 +57,52 @@ class TitleBoxComponent extends React.Component {
               <span className="glyphicon glyphicon-star" style={titleStarStyle} />
             </a>
             GitHub Stargazer
+            <a id="sign-in" href="https://github.com/login/oauth/authorize?client_id=ebee36504152fd9410a2&state=test&scope=public_repo">
+              <span className="btn btn-info" style={titleButtonStyle}>Sign In</span>
+            </a>
+            <button id="star-all-button" className="btn btn-info hidden" style={titleButtonStyle}
+                    onClick={this._buttonAction}>Star All
+            </button>
           </h2>
           <p>Have you starred these repos?</p>
         </div>
       </div>
     );
+  }
+
+  _buttonAction() {
+    const _this = this;
+    const total = this.props.data.length;
+    var count = 0;
+    for (var i = 0; i < this.props.data.length; i++) {
+      const repo = this.props.data[i];
+      const url = "https://api.github.com/user/starred/" + repo.fullUrl;
+      var error = "";
+      $('#content').fadeOut('fast', function () {
+        $('#progress-bar').fadeIn();
+      });
+      $.ajax({
+        url: url,
+        method: 'PUT',
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader("Authorization", _this.props.accessToken);
+        },
+        success: function () {
+          count++;
+          if (count == total) {
+            console.log('finished!');
+            _this.props.onStarAllFinishedAction(error);
+            $('#progress-bar').fadeOut('fast', function () {
+              $('#content').fadeIn();
+            });
+          }
+        },
+        error: function (xhr, status, err) {
+          console.log(url, status, err.toString());
+          error = err.toString();
+        }
+      });
+    }
   }
 }
 
@@ -74,7 +119,7 @@ class AddBoxComponent extends React.Component {
   }
 
   render() {
-    const buttonClassName = this.state.defaultStyle ? 'btn btn-default' : 'btn btn-primary';
+    const buttonClassName = this.state.defaultStyle ? 'btn btn-default disabled' : 'btn btn-primary';
     return (
       <div className="row">
         <div className="col-lg-12">
@@ -162,7 +207,7 @@ class InputBoxComponent extends React.Component {
   }
 
   render() {
-    const buttonClassName = this.state.defaultStyle ? 'btn btn-default' : 'btn btn-primary';
+    const buttonClassName = this.state.defaultStyle ? 'btn btn-default disabled' : 'btn btn-primary';
     return (
       <div className="row">
         <br />
@@ -235,7 +280,7 @@ class RepoListComponent extends React.Component {
   render() {
     const _this = this;
     const repoNodes = this.props.data.map(function (repo, index) {
-      const starClassName = _this.props.starredMap[repo.fullUrl] ? 'glyphicon glyphicon-star' : 'glyphicon glyphicon-star-empty';
+      const starClassName = _this.props.starredMap[repo.fullUrl.toLowerCase()] ? 'glyphicon glyphicon-star' : 'glyphicon glyphicon-star-empty';
       return (
         <li key={index} className="list-group-item">
           <div className="row">
@@ -280,6 +325,7 @@ class RepoListComponent extends React.Component {
 
 class ContainerBoxComponent extends React.Component {
   constructor(props) {
+    console.log(document.URL);
     super(props);
     firebase.initializeApp(FIREBASE_CONFIG);
     this.state = {
@@ -289,12 +335,43 @@ class ContainerBoxComponent extends React.Component {
       starredMap: {},
       error: false,
       message: '',
-      timeout: -1
+      timeout: -1,
+      signedIn: false,
+      accessToken: ''
     };
+    const _this = this;
+    const selfUrl = document.URL;
+    if (selfUrl.indexOf("code=") != -1) {
+      const endIndex = selfUrl.indexOf('&') == -1 ? selfUrl.length : selfUrl.indexOf('&');
+      const authCode = selfUrl.substring(selfUrl.indexOf('code=') + 5, endIndex);
+      console.log('auth code: ' + authCode);
+      const url = 'https://repo-star-server.herokuapp.com/auth?code=' + authCode;
+      $.ajax({
+        url: url,
+        method: 'GET',
+        dataType: 'json',
+        success: function (data) {
+          const accessToken = data.access_token;
+          console.log('login success: ' + accessToken);
+          _this.setState({
+            signedIn: true,
+            accessToken: accessToken
+          });
+          $('#sign-in').fadeOut('fast', function () {
+            $('#star-all-button').removeClass('hidden');
+          });
+        }.bind(_this),
+        error: function (xhr, status, err) {
+          console.log(url, status, err.toString());
+          _this._showAlertMessage("Failed to sign in: " + err.toString());
+        }.bind(_this)
+      });
+    }
     this._loadDataFromFirebase = this._loadDataFromFirebase.bind(this);
     this._loadUserImages = this._loadUserImages.bind(this);
     this._checkUserStarredList = this._checkUserStarredList.bind(this);
     this._transformStarredList = this._transformStarredList.bind(this);
+    this._onStarAllFinished = this._onStarAllFinished.bind(this);
     this._showAlertMessage = this._showAlertMessage.bind(this);
   }
 
@@ -381,10 +458,17 @@ class ContainerBoxComponent extends React.Component {
     const map = {};
     if (starredList) {
       for (var i = 0; i < starredList.length; i++) {
-        map[starredList[i].full_name] = true;
+        map[starredList[i].full_name.toLowerCase()] = true;
       }
     }
     return map;
+  }
+
+  _onStarAllFinished(error) {
+    if (!error || error.length == 0) {
+      return;
+    }
+    this._showAlertMessage(error);
   }
 
   _showAlertMessage(message) {
@@ -407,7 +491,8 @@ class ContainerBoxComponent extends React.Component {
   render() {
     return (
       <div className="container">
-        <TitleBoxComponent error={this.state.error} message={this.state.message} />
+        <TitleBoxComponent signedIn={this.state.signedIn} accessToken={this.state.accessToken} error={this.state.error}
+                           message={this.state.message} data={this.state.dataList} onStarAllFinishedAction={this._onStarAllFinished} />
         <ProgressBarComponent />
         <RepoListComponent data={this.state.dataList} imageMap={this.state.imageMap}
                            starredMap={this.state.starredMap} goAction={this._checkUserStarredList}
