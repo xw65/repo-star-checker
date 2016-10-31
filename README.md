@@ -9,7 +9,9 @@
 ###Add your repo
 * Use the input box to add your repo with format 'userName/repoName'
 
+###One click star all repos
+* Authorize with your Github account and one click star all repos
+
 ###Todo
-* use GitHub auth & star from UI
-* one click star all
 * display repo detail on UI
+* Refactor with Redux
