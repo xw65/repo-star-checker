@@ -26,6 +26,10 @@ const titleStarStyle = {
 const titleButtonStyle = {
   float: 'right'
 };
+const titleSignedInStyle = {
+  float: 'right',
+  fontWeight: 'bold'
+};
 const listStarStyle = {
   marginRight: 4
 };
@@ -42,10 +46,15 @@ const textStyle = {
 class TitleBoxComponent extends React.Component {
   constructor(props) {
     super(props);
-    this._buttonAction = this._buttonAction.bind(this);
+    this.state = {
+      signInText: 'Sign In'
+    };
+    this._signInButtonAction = this._signInButtonAction.bind(this);
+    this._starAllButtonAction = this._starAllButtonAction.bind(this);
   }
 
   render() {
+    const signedInHiddenState = this.props.signedIn ? "display: block;" : 'display: none';
     return (
       <div>
         <div id="alert" className="alert alert-danger" style={alertStyle} hidden>
@@ -57,20 +66,29 @@ class TitleBoxComponent extends React.Component {
               <span className="glyphicon glyphicon-star" style={titleStarStyle} />
             </a>
             GitHub Stargazer
-            <a id="sign-in" href="https://github.com/login/oauth/authorize?client_id=ebee36504152fd9410a2&state=test&scope=public_repo">
-              <span className="btn btn-info" style={titleButtonStyle}>Sign In</span>
+            <a id="sign-in"
+               href="https://github.com/login/oauth/authorize?client_id=ebee36504152fd9410a2&state=test&scope=public_repo">
+              <span className="btn btn-info" style={titleButtonStyle}
+                    onClick={this._signInButtonAction}>{this.state.signInText}</span>
             </a>
-            <button id="star-all-button" className="btn btn-info hidden" style={titleButtonStyle}
-                    onClick={this._buttonAction}>Star All
+            <button id="star-all-button" className="btn btn-success hidden" style={titleButtonStyle}
+                    onClick={this._starAllButtonAction}>Star All
             </button>
           </h2>
           <p>Have you starred these repos?</p>
+          <p style={{ titleSignedInStyle, signedInHiddenState }}>Signed In</p>
         </div>
       </div>
     );
   }
 
-  _buttonAction() {
+  _signInButtonAction() {
+    this.setState({
+      signInText: 'Signing In'
+    });
+  }
+
+  _starAllButtonAction() {
     const _this = this;
     const total = this.props.data.length;
     var count = 0;
@@ -98,8 +116,16 @@ class TitleBoxComponent extends React.Component {
           }
         },
         error: function (xhr, status, err) {
+          count++;
           console.log(url, status, err.toString());
           error = err.toString();
+          if (count == total) {
+            console.log('finished!');
+            _this.props.onStarAllFinishedAction(error);
+            $('#progress-bar').fadeOut('fast', function () {
+              $('#content').fadeIn();
+            });
+          }
         }
       });
     }
@@ -492,7 +518,8 @@ class ContainerBoxComponent extends React.Component {
     return (
       <div className="container">
         <TitleBoxComponent signedIn={this.state.signedIn} accessToken={this.state.accessToken} error={this.state.error}
-                           message={this.state.message} data={this.state.dataList} onStarAllFinishedAction={this._onStarAllFinished} />
+                           message={this.state.message} data={this.state.dataList}
+                           onStarAllFinishedAction={this._onStarAllFinished} />
         <ProgressBarComponent />
         <RepoListComponent data={this.state.dataList} imageMap={this.state.imageMap}
                            starredMap={this.state.starredMap} goAction={this._checkUserStarredList}
