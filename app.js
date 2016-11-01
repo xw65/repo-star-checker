@@ -54,7 +54,9 @@ class TitleBoxComponent extends React.Component {
   }
 
   render() {
-    const signedInHiddenState = this.props.signedIn ? "display: block;" : 'display: none';
+    const signedInText = this.props.signedIn
+      ? (<p style={titleSignedInStyle}>Signed In</p>)
+      : (<p style={titleSignedInStyle} hidden>Signed In</p>);
     return (
       <div>
         <div id="alert" className="alert alert-danger" style={alertStyle} hidden>
@@ -76,7 +78,7 @@ class TitleBoxComponent extends React.Component {
             </button>
           </h2>
           <p>Have you starred these repos?</p>
-          <p style={{ titleSignedInStyle, signedInHiddenState }}>Signed In</p>
+          {signedInText}
         </div>
       </div>
     );
