@@ -4,7 +4,7 @@
   "description": "Mark star for github repo",
   "main": "server.js",
   "scripts": {
-    "start": "babel server.js",
+    "start": "nodemon --watch server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
