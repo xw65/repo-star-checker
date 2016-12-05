@@ -1,0 +1,26 @@
+{
+  "name": "repo-star-checker",
+  "version": "0.0.1",
+  "description": "Mark star for github repo",
+  "main": "server.js",
+  "scripts": {
+    "start": "babel server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xw65/repo-star-checker.git"
+  },
+  "author": "xw65",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/xw65/repo-star-checker/issues"
+  },
+  "homepage": "https://github.com/xw65/repo-star-checker#readme",
+  "dependencies": {
+    "express": "^4.14.0",
+    "hogan-express": "^0.5.2",
+    "react": "^15.4.1",
+    "react-dom": "^15.4.1"
+  }
+}
